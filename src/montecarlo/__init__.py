@@ -9,7 +9,6 @@ import random
 import scipy
 random.seed(2)
 
-
 class BitString:
     """
     Simple class to implement a config of bits
@@ -179,5 +178,58 @@ class IsingHamiltonian:
         
         return E, M, HC, MS
             
+class MonteCarlo:
+    '''
+    Initialize Bitstring in random configuration
+    Create loop that runs n_samples times
+        Loop through each site of the Bitstring
+            Flip site i
+            Check if energy is > or < previous config
+                If < keep it
+                If >, do prob check
+                    If fails, flip site back
+    Append energy (e) and magnetization (m)
+    '''
+    def __init__(self, ih):
 
+        N = ih.G.number_of_nodes() # Number of nodes
+        self.N = N
+        self.ih = ih
 
+    '''def calculate_magnetization(self): # Copied from IH above
+        spin = 0
+        N = self.N # Definitions
+        bs = self.bitstring
+        for i in range(2**N): # Spin EQ
+            bs.set_integer_config(i)
+            spin = sum(2 * bs.config[j] - 1 for j in range(N))
+        return spin'''
+    
+    def run(self, T, n_samples, n_burn):
+
+        bitstring = BitString(self.N) # Init BitString in Random Config
+        for i in range(self.N):
+            bitstring.config[i] = np.random.choice([0, 1])
+        all_energy = [] # Create empty list for energy
+        all_magnetization = [] # Create empty list for magnetization
+        current_energy = self.ih.energy(bitstring) # Setting current energy
+
+        for j in range(n_samples): # Loop through BS
+            for i in range(self.N): # Loop through each site
+                bitstring.flip_site(i) # Flipping site i
+                new_energy = self.ih.energy(bitstring) # Setting new energy
+                if new_energy < current_energy: # Testing if new energy is less than current energy
+                    current_energy = new_energy # Keeping change
+                else:
+                    boltzman = 1/T
+                    prob = np.e**(-boltzman*(new_energy-current_energy)) # Setting Probability
+                    if random.random() < prob: # Probability check
+                        current_energy = new_energy #Keeping Change
+                    else:
+                        bitstring.flip_site(i) # FLips site back
+            if (n_burn > 0):
+                n_burn -= 1
+            else:
+                all_energy.append(current_energy) # Append to history list
+                all_magnetization.append(bitstring.on() - bitstring.off()) # Append to history list
+        return all_energy, all_magnetization
