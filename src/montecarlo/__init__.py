@@ -9,7 +9,13 @@ import random
 import scipy
 random.seed(2)
 
-class BitString:
+from . bitstring import BitString
+
+from . isingham import IsingHamiltonian
+
+from . montecarlopy import MonteCarlo
+
+'''class BitString:
     """
     Simple class to implement a config of bits
     """
@@ -92,9 +98,24 @@ class BitString:
             self.config[self.N-1-i] = dec % 2
             dec = dec // 2
         return BitString(self.N)
+'''
 
-class IsingHamiltonian:
+'''class IsingHamiltonian:
     def __init__(self, G):
+        """Sets the graph and mus value for the next function 'energy'
+        
+        Math:
+            none
+            
+        Parameters:
+            self: self
+                no input
+            G: Graph
+                input graph initialization
+            
+        Returns:
+            none
+        """
         self.G = G
         self.mus = np.zeros(G.number_of_nodes())
 
@@ -129,9 +150,44 @@ class IsingHamiltonian:
         return E
     
     def set_mu(self, mus):
+        """Sets the mus for the next function 'compute_average_values'
+        
+        Math:
+            none
+            
+        Parameters:
+            self: self
+                no input
+            mus: mus
+                input mus initialization
+            
+        Returns:
+            none
+            """
         self.mus = mus
     
     def compute_average_values(self, T: float):
+        """Computes the average thermodynamic values based on the temperature
+
+        Math:
+            <E> = Sum over index a of (E(a)*Probability(a))
+            <M> = Sum over index a of (M(a)*Probability(a))
+            HC = (<E^2>-<E>^2)*T^(-2)
+            MS = (<M^2>-<M>^2)*T^(-1)
+            Contains averages
+        
+        Parameters:
+            self: self
+                no input
+            T: temperature (float)
+                input temperature that all graph energies are dependent on
+        
+        Returns:
+            Average Energy
+            Magnetization
+            Variance of E
+            Variance of M
+        """
         
         G = self.G
         bs = BitString(G.number_of_nodes())
@@ -177,9 +233,10 @@ class IsingHamiltonian:
         
         
         return E, M, HC, MS
+'''      
             
-class MonteCarlo:
-    '''
+'''class MonteCarlo:
+    """
     Initialize Bitstring in random configuration
     Create loop that runs n_samples times
         Loop through each site of the Bitstring
@@ -189,23 +246,57 @@ class MonteCarlo:
                 If >, do prob check
                     If fails, flip site back
     Append energy (e) and magnetization (m)
-    '''
+    """
     def __init__(self, ih):
+        """Sets the ih values, including N, for 'run' function
+        
+            Math:
+                none
+            
+            Parameters:
+                self: self
+                    no input
+                ih: IsingHamiltonian
+                    input ising interactions object
+            
+            Returns:
+                none
+        """
 
         N = ih.G.number_of_nodes() # Number of nodes
         self.N = N
         self.ih = ih
 
-    '''def calculate_magnetization(self): # Copied from IH above
-        spin = 0
-        N = self.N # Definitions
-        bs = self.bitstring
-        for i in range(2**N): # Spin EQ
-            bs.set_integer_config(i)
-            spin = sum(2 * bs.config[j] - 1 for j in range(N))
-        return spin'''
+        """def calculate_magnetization(self): # Copied from IH above
+            spin = 0
+            N = self.N # Definitions
+            bs = self.bitstring
+            for i in range(2**N): # Spin EQ
+                bs.set_integer_config(i)
+                spin = sum(2 * bs.config[j] - 1 for j in range(N))
+            return spin
+        """
     
     def run(self, T, n_samples, n_burn):
+        """Sets the mus for the next function 'compute_average_values'
+        
+        Math:
+            none
+            
+        Parameters:
+            self: self
+                no input
+            T: temperature
+                input temperature for average values
+            n_samples: number of nodes for sample
+                input the number of samples to loop through
+            n_burn: number of loops burned/removed
+                input the number of samples to loop through and remove from the data collection at the beginning of testing
+            
+        Returns:
+            list all_energy (contains old or changed energy values within Ising Hamiltonian objects)
+            list all_magnetization (contains old or changed magnetization values within Ising Hamiltonian objects)
+        """
 
         bitstring = BitString(self.N) # Init BitString in Random Config
         for i in range(self.N):
@@ -233,3 +324,4 @@ class MonteCarlo:
                 all_energy.append(current_energy) # Append to history list
                 all_magnetization.append(bitstring.on() - bitstring.off()) # Append to history list
         return all_energy, all_magnetization
+'''
